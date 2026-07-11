@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(api-smoke-test)",
+      "Skill(api-researcher)",
+      "Skill(smoke)",
+      "Skill(opsx:apply)"
+    ]
+  }
+}

@@ -1,0 +1,68 @@
+name: haintly-infra
+
+services:
+  db-main:
+    image: postgres:16-alpine
+    container_name: haintly-db-main
+    environment:
+      POSTGRES_USER: ${MAIN_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${MAIN_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${MAIN_POSTGRES_DB}
+    ports:
+      - "${MAIN_POSTGRES_EXP_PORT}:5432"
+    volumes:
+      - haintly_main_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - haintly_network
+
+
+  nats:
+    image: nats:2-alpine
+    container_name: haintly-nats
+    restart: unless-stopped
+    command: ["--js", "--sd", "/data"]
+    ports:
+      - "${NATS_PORT:-4222}:4222"
+      - "8222:8222"
+    volumes:
+      - haintly_infra_nats_data:/data
+    networks:
+      - haintly_network
+
+  redis:
+    image: redis:latest
+    container_name: haintly-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:${REDIS_PORT:-6379}"
+    volumes:
+      - haintly_infra_redis_data:/data
+    command: >
+      sh -c 'redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD"'
+    healthcheck:
+      test:
+        - CMD
+        - sh
+        - -c
+        - redis-cli -a "$$REDIS_PASSWORD" ping
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - haintly_network
+
+
+networks:
+  haintly_network:
+    external: true
+
+volumes:
+  haintly_main_postgres_data:
+  haintly_infra_nats_data:
+  haintly_infra_redis_data:

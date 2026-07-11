@@ -1,0 +1,25 @@
+name: haintly
+
+services:
+  main-frontend:
+    build:
+      context: ../services/main-fe
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8101/api}
+        PORT: ${PORT:-3101}
+    container_name: haintly-main-fe
+    ports:
+      - "${PORT:-3101}:${PORT:-3101}"
+    environment:
+      PORT: ${PORT:-3101}
+    restart: always
+    env_file:
+      - path: ../services/main-fe/.env
+        required: false
+    networks:
+      - haintly_network
+
+networks:
+  haintly_network:
+    external: true
