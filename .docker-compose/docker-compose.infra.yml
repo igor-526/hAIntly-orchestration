@@ -1,6 +1,25 @@
 name: haintly-infra
 
 services:
+  db-profile:
+    image: postgres:16-alpine
+    container_name: haintly-db-profile
+    environment:
+      POSTGRES_USER: ${PROFILE_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${PROFILE_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${PROFILE_POSTGRES_DB}
+    ports:
+      - "${PROFILE_POSTGRES_EXP_PORT:-5452}:5432"
+    volumes:
+      - haintly_profile_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - haintly_network
+
   db-main:
     image: postgres:16-alpine
     container_name: haintly-db-main
@@ -63,6 +82,7 @@ networks:
     external: true
 
 volumes:
+  haintly_profile_postgres_data:
   haintly_main_postgres_data:
   haintly_infra_nats_data:
   haintly_infra_redis_data:

@@ -6,10 +6,12 @@ SERVICES_MANIFEST ?= services.manifest
 COMPOSE_INFRA = $(COMPOSE_DIR)/docker-compose.infra.yml
 COMPOSE_BE = $(COMPOSE_DIR)/docker-compose.be.yml
 COMPOSE_FE = $(COMPOSE_DIR)/docker-compose.fe.yml
+COMPOSE_PROFILE = $(COMPOSE_DIR)/docker-compose.profile.yml
 
 DC_INFRA := docker compose -f $(COMPOSE_INFRA)
 DC_BE := docker compose -f $(COMPOSE_BE)
 DC_FE := docker compose --env-file services/main-fe/.env -f $(COMPOSE_FE)
+DC_PROFILE := docker compose -f $(COMPOSE_PROFILE)
 
 #=====ORCHESTRATOR COMMANDS=====
 sync:
@@ -64,11 +66,18 @@ fe-build:
 	@echo "Building frontend image..."
 	@$(DC_FE) build
 
+profile-build:
+	@echo "Building profile service image..."
+	@docker compose -f $(COMPOSE_PROFILE) build
+
 check-compose-fe:
 	@./scripts/check-compose-fe.sh
 
 check-compose-infra:
 	@sh scripts/check-compose-infra.sh
+
+check-compose-profile:
+	@sh scripts/check-profile-runtime.sh
 
 #=====RUN COMMANDS=====
 infra:
@@ -79,3 +88,6 @@ be:
 
 fe:
 	$(DC_FE) up -d
+
+profile:
+	$(DC_PROFILE) up -d
