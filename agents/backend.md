@@ -98,6 +98,19 @@ composition/di -> concrete implementations
 
 Не придумывай endpoint, NATS subject, event schema, порт или топологию очереди, которых нет в OpenSpec или коде. При отсутствии решения верни Router конкретный блокер и предложи, какой артефакт требуется обновить.
 
+### HeadHunter API
+
+Перед изменением HH-интеграции обязательно изучи `docs/hh_openapi.yml` и актуальную документацию `https://api.hh.ru/openapi/redoc`. Сверяй HTTP method, path, параметры, scopes, rate limits и ошибки; существующий адаптер не считается достаточным источником контракта.
+
+### Новый микросервис и runtime
+
+- Создавай новый FastAPI-сервис копированием `fastapi_template` в `services/<service-name>` и сохраняй его разделение API, application/domain, protocols и infrastructure.
+- Добавляй отдельный compose приложения и миграций без БД; инфраструктурные контейнеры принадлежат `.docker-compose/docker-compose.infra.yml`.
+- Соблюдай индекс портов из `AGENTS.md`, compose project name `haintly-<service-name>`, PostgreSQL env naming и обязательные Makefile-команды.
+- Внутренние backend-сервисы не добавляют CORS и входящую auth middleware без требования OpenSpec. `main-be` сохраняет публичную браузерную границу.
+- Передавай пользовательский контекст между backend-сервисами через `X-User-Id` согласно контракту change. Адреса, credentials, таймауты, NATS/Redis/Celery и связанные объекты получай из валидируемого окружения вызывающего сервиса без production defaults.
+- Используй `profile-service` и архивный `task-04-hh-oauth` как референс, но проверяй их решения против текущего change и общих правил.
+
 ## Тестирование
 
 Для изменения поведения нужны:
@@ -107,6 +120,8 @@ composition/di -> concrete implementations
 - integration-тесты при изменении HTTP, БД или NATS-контракта;
 - regression-тест для исправления дефекта;
 - отсутствие live HH/LLM-вызовов в обычном test suite.
+
+Перед завершением собери изменённые образы без запуска через корневую `<service>-build` команду, затем подними сервис штатной `<service>` командой. Проверь состояние контейнеров, healthcheck и логи; ошибка сборки или запуска является блокером передачи в Quality Gate.
 
 Запускай только реально существующие команды затронутого сервиса. Отсутствующую инфраструктуру фиксируй как test gap, но не называй проверку успешной.
 
