@@ -234,3 +234,4 @@ marimo/_lsp/
 __marimo__/
 
 .directory
+.mimocode/

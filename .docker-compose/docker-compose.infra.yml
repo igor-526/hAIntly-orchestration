@@ -1,6 +1,44 @@
 name: haintly-infra
 
 services:
+  db-vacancy:
+    image: postgres:16-alpine
+    container_name: haintly-db-vacancy
+    environment:
+      POSTGRES_USER: ${VACANCY_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${VACANCY_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${VACANCY_POSTGRES_DB}
+    ports:
+      - "${VACANCY_POSTGRES_EXP_PORT:-5452}:5432"
+    volumes:
+      - haintly_vacancy_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - haintly_network
+
+  db-ai:
+    image: postgres:16-alpine
+    container_name: haintly-db-ai
+    environment:
+      POSTGRES_USER: ${AI_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${AI_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${AI_POSTGRES_DB}
+    ports:
+      - "${AI_POSTGRES_EXP_PORT:-5452}:5432"
+    volumes:
+      - haintly_ai_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - haintly_network
+
   db-profile:
     image: postgres:16-alpine
     container_name: haintly-db-profile
@@ -82,6 +120,8 @@ networks:
     external: true
 
 volumes:
+  haintly_vacancy_postgres_data:
+  haintly_ai_postgres_data:
   haintly_profile_postgres_data:
   haintly_main_postgres_data:
   haintly_infra_nats_data:

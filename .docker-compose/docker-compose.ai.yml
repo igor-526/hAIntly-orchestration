@@ -1,0 +1,51 @@
+name: haintly-ai-service
+
+services:
+  app:
+    build:
+      context: ../services/ai-service
+      dockerfile: Dockerfile
+    container_name: haintly-ai-service
+    restart: always
+    env_file:
+      - path: ../services/ai-service/.env
+        required: true
+    ports:
+      - "8104:8000"
+    volumes:
+      - ../services/ai-service/src:/app/src:${DEV_MOUNT:-ro}
+    working_dir: /app/
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - haintly_network
+
+  migration:
+    build:
+      context: ../services/ai-service
+      dockerfile: Dockerfile
+    container_name: haintly-ai-service-migration
+    restart: "no"
+    env_file:
+      - path: ../services/ai-service/.env
+        required: true
+    volumes:
+      - ../services/ai-service/src:/app/src:${DEV_MOUNT:-ro}
+    working_dir: /app/src
+    command: >
+      sh -c 'if [ "$$SKIP_MIGRATIONS" = "true" ]; then
+        echo "Миграции пропущены (SKIP_MIGRATIONS=true)";
+        exit 0;
+      else
+        uv run alembic -c alembic.ini upgrade head;
+      fi'
+    networks:
+      - haintly_network
+
+networks:
+  haintly_network:
+    external: true

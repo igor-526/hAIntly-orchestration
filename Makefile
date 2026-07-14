@@ -7,11 +7,15 @@ COMPOSE_INFRA = $(COMPOSE_DIR)/docker-compose.infra.yml
 COMPOSE_BE = $(COMPOSE_DIR)/docker-compose.be.yml
 COMPOSE_FE = $(COMPOSE_DIR)/docker-compose.fe.yml
 COMPOSE_PROFILE = $(COMPOSE_DIR)/docker-compose.profile.yml
+COMPOSE_VACANCY = $(COMPOSE_DIR)/docker-compose.vacancy.yml
+COMPOSE_AI = $(COMPOSE_DIR)/docker-compose.ai.yml
 
 DC_INFRA := docker compose -f $(COMPOSE_INFRA)
 DC_BE := docker compose -f $(COMPOSE_BE)
 DC_FE := docker compose --env-file services/main-fe/.env -f $(COMPOSE_FE)
 DC_PROFILE := docker compose -f $(COMPOSE_PROFILE)
+DC_VACANCY := docker compose -f $(COMPOSE_VACANCY)
+DC_AI := docker compose -f $(COMPOSE_AI)
 
 #=====ORCHESTRATOR COMMANDS=====
 sync:
@@ -70,6 +74,23 @@ profile-build:
 	@echo "Building profile service image..."
 	@docker compose -f $(COMPOSE_PROFILE) build
 
+vacancy-build:
+	@echo "Building vacancy service image..."
+	@docker compose -f $(COMPOSE_VACANCY) build
+
+vacancy-migrate:
+	$(DC_VACANCY) run --rm migration
+
+vacancy-seed:
+	$(DC_VACANCY) --profile operations run --rm seed
+
+vacancy-reset:
+	$(DC_VACANCY) --profile operations run --rm reset
+
+ai-build:
+	@echo "Building ai service image..."
+	@docker compose -f $(COMPOSE_AI) build
+
 check-compose-fe:
 	@./scripts/check-compose-fe.sh
 
@@ -91,3 +112,9 @@ fe:
 
 profile:
 	$(DC_PROFILE) up -d
+
+vacancy:
+	$(DC_VACANCY) up -d
+
+ai:
+	$(DC_AI) up -d
