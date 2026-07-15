@@ -81,27 +81,9 @@ vacancy-build:
 	@echo "Building vacancy service image..."
 	@docker compose -f $(COMPOSE_VACANCY) build
 
-vacancy-migrate:
-	$(DC_VACANCY) run --rm migration
-
-vacancy-seed:
-	$(DC_VACANCY) --profile operations run --rm seed
-
-vacancy-reset:
-	$(DC_VACANCY) --profile operations run --rm reset
-
 ai-build:
 	@echo "Building ai service image..."
 	@docker compose -f $(COMPOSE_AI) build
-
-check-compose-fe:
-	@./scripts/check-compose-fe.sh
-
-check-compose-infra:
-	@sh scripts/check-compose-infra.sh
-
-check-compose-profile:
-	@sh scripts/check-profile-runtime.sh
 
 #=====RUN COMMANDS=====
 infra:
@@ -121,3 +103,25 @@ vacancy:
 
 ai:
 	$(DC_AI) up -d
+
+#=====TEST COMMANDS=====
+lint:
+	cd services/main-be && make lint
+	cd services/main-fe && make lint
+	cd services/vacancy-service && make lint
+	cd services/profile-service && make lint
+	cd services/ai-service && make lint
+
+test:
+	cd services/main-be && make test
+	cd services/main-fe && make test
+	cd services/vacancy-service && make test
+	cd services/profile-service && make test
+	cd services/ai-service && make test
+
+format:
+	cd services/main-be && make format
+	cd services/main-fe && make format
+	cd services/vacancy-service && make format
+	cd services/profile-service && make format
+	cd services/ai-service && make format

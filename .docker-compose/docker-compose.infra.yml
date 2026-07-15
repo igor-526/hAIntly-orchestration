@@ -92,7 +92,7 @@ services:
       - haintly_network
 
   redis:
-    image: redis:latest
+    image: redis:8-alpine
     container_name: haintly-redis
     restart: unless-stopped
     ports:

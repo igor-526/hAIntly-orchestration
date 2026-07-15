@@ -1,4 +1,4 @@
-name: haintly
+name: haintly-main-fe
 
 services:
   main-frontend:
