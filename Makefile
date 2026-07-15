@@ -61,7 +61,10 @@ services-branches:
 %:
 	@:
 
-#=====BUILD COMMANDS=====
+fe-dev:
+	cd services/main-fe && npm run dev
+
+#=====BUILD COMMANDS===== 
 be-build:
 	@echo "Building backend image..."
 	@docker compose -f $(COMPOSE_BE) build
